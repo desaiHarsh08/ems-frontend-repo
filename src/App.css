@@ -1,0 +1,180 @@
+/* CSS RULES: FOR SIDEBAR */
+#loading-bar {
+  animation: loadingBar .5s infinite alternate-reverse;
+  transition: all 0.3s ease-in-out;
+}
+
+@keyframes loadingBar {
+  from {
+    transform: translateX(0vw);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+/* ---------------------------------------------------------------------------------------- */
+/* CSS RULES: FOR NAVBAR */
+.navbar {
+  height: 58px;
+}
+/* ---------------------------------------------------------------------------------------- */
+/* CSS RULES: FOR SIDEBAR */
+.sidebar {
+  width: 250px;
+  height: calc(100vh - 58px);
+}
+/* ---------------------------------------------------------------------------------------- */
+/* CSS RULES: FOR DASHBOARD */
+.dashboard-menue-display {
+  width: calc(100vw - 250px);
+  height: calc(100vh - 58px);
+}
+
+.exam-cards {
+  min-width: calc(100vw - 250px);
+  overflow-y: scroll;
+}
+
+.exam-form input {
+  min-width: 200px !important;
+}
+
+
+
+.shared-area {
+  width: 85%;
+}
+
+.app-container {
+  height: calc(100vh - 56px);
+}
+
+.app-left {
+  min-width: 250px;
+}
+.app-right {
+  width: calc(100vw - 250px);
+  overflow-y: auto;
+}
+
+#hmbrg {
+  display: none;
+}
+
+.min-w-input {
+  width: 200px;
+}
+
+.add-members-card {
+  width: 33% !important;
+}
+
+.add-members-bar-container {
+  width: calc(100% - 48px);
+}
+@media (max-width: 990px) {
+  .sidebar {
+    position: absolute;
+    top: 58px;
+    transform: translateX(-1000px);
+    /* bottom: 0px; */
+    height: calc(100vh - 56px);
+    width: 75%;
+    z-index: 9999999;
+  }
+
+  .add-members-container {
+    flex-direction: column;
+  }
+
+  .add-members-card {
+    width: 100% !important;
+  }
+  .translate-sidebar {
+    transform: translateX(0);
+  }
+  
+  #hmbrg {
+    display: block;
+  }
+
+  .shared-area {
+    width: 100%;
+    position: fixed;
+    top:calc(56px);
+  }
+}
+
+
+#loading {
+  position: absolute;
+}
+
+#loading-bar {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: all;
+  animation: loadingAnimation 1s ease-in-out infinite;
+}
+
+
+@keyframes loadingAnimation {
+  from {
+      transform: translateX(-10vw);
+  }
+  to {
+      transform: translateX(100vw);
+  }
+}
+
+
+
+@media (max-width: 640px) {
+  #exams-card {
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  #exams-card .exam {
+    width: 30%;
+  }
+  .min-w-input {
+    width: auto;
+  }
+  .members-container {
+    flex-direction: column;
+    align-items: baseline !important;
+  }
+}
+
+@media (max-width: 568px) {
+  #exams-card, #recent-exam-container {
+    flex-direction: column;
+  }
+  #exams-card .exam {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+@media (max-width: 365px) {
+  #app-name-login {
+    font-size: 22px;
+  }
+}
+
+  #exams-card .exam ul {
+    width: 75%;
+  }
+  #exams-card .exam ul li p {
+    text-align: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .floor-room-container {
+    flex-direction: column;
+  }
+}
