@@ -32,7 +32,7 @@ const CreateExam = () => {
     });
     const [examOC, setExamOC] = useState({ username: '', email: '', userType: 'EXAM_OC', phone: '', examName: exam.examName, excelData: exam.examDate, examTime: exam.examTime });
 
-    useEffect(()=> {
+    useEffect(() => {
         dispatch(toogleSidebar());
     }, [])
 
@@ -78,12 +78,12 @@ const CreateExam = () => {
 
             reader.onload = (e) => {
                 const dataFromFile = e.target.result;
-                const workbook = XLSX.read(dataFromFile, { type: 'array' });
+                const workbook = XLSX.read(dataFromFile, { cellDates: true, type: 'array' });
                 const sheetName = workbook.SheetNames[0]; // Assumes the first sheet
                 const worksheet = workbook.Sheets[sheetName];
-                const data = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+                const data = XLSX.utils.sheet_to_json(worksheet,  { raw: true, dateNF: 'dd-mm-yyyy' });
                 setExaminersData(data);
-                // console.log('Parsed examines Data:', data);
+                console.log('Parsed examines Data:', data);
             };
             reader.readAsArrayBuffer(file);
         }
@@ -178,7 +178,7 @@ const CreateExam = () => {
         }
         // console.log(tmpSaved);
 
-        
+
 
         setExam((prev) => ({
             ...prev,
@@ -191,12 +191,12 @@ const CreateExam = () => {
     const convertToAMPM = (time24) => {
         let hour = parseInt(time24.substring(0, 2));
         let minute = time24.substring(3);
-    
+
         let period = (hour >= 12) ? "PM" : "AM";
-    
+
         hour = (hour > 12) ? hour - 12 : hour;
         hour = (hour === 0) ? 12 : hour;
-    
+
         return `${hour}:${minute} ${period}`;
     }
 
@@ -247,8 +247,19 @@ const CreateExam = () => {
 
         const examinersObjArr = [];
         setActivityStatus('Uploading examiners!')
+        console.log("formating examiners!")
+        console.log(examinersData);
         for (let i = 0; i < examinersData.length; i++) {
-            examinersObjArr.push({
+            let tmpLastDateChecking = new Date(examinersData[i]["Last Date of Paper Checking"]);
+            let tmpLastDateMarksUpload = new Date(examinersData[i]["Last Date of Marks Upload"]);
+            
+            let paperChecking = {
+                lastDateChecking: `${(tmpLastDateChecking.getDate() + 1).toString().padStart(2, '0')}-${(tmpLastDateChecking.getMonth() + 1).toString().padStart(2, '0')}-${tmpLastDateChecking.getFullYear()}`,
+                lastDateMarksUpload: `${(tmpLastDateMarksUpload.getDate() + 1).toString().padStart(2, '0')}-${(tmpLastDateMarksUpload.getMonth() + 1).toString().padStart(2, '0')}-${tmpLastDateMarksUpload.getFullYear()}`
+            };
+            console.log(paperChecking);
+
+            let obj = {
                 username: examinersData[i]["Name of Examiner"],
                 email: examinersData[i]["Email"],
                 userType: "EXAMINER",
@@ -257,13 +268,12 @@ const CreateExam = () => {
                 examDate: exam.examDate,
                 examTime: examTime,
                 examId: examId,
-                paperChecking: {
-                    lastDateChecking: examinersData[i]["Last Date of Paper Checking"],
-                    lastDateMarksUpload: examinersData[i]["Last Date of Marks Upload"],
-                },
+                paperChecking,
                 dateChecking: '',
                 dateMarksUpload: ''
-            });
+            }
+            examinersObjArr.push(obj);
+            console.log(obj);
         }
 
         for (let i = 0; i < examinersObjArr.length; i++) {
@@ -281,7 +291,7 @@ const CreateExam = () => {
             } catch (error) {
                 // console.log(error);
             }
-            setProgressStatus((((i+1)*100)/examinersObjArr.length).toFixed(1));
+            setProgressStatus((((i + 1) * 100) / examinersObjArr.length).toFixed(1));
         }
     }
 
@@ -320,7 +330,7 @@ const CreateExam = () => {
             } catch (error) {
                 // console.log(error);
             }
-            setProgressStatus((((i+1)*100)/invigilatorsObjArr.length).toFixed(1));
+            setProgressStatus((((i + 1) * 100) / invigilatorsObjArr.length).toFixed(1));
         }
     }
 
@@ -358,7 +368,7 @@ const CreateExam = () => {
             } catch (error) {
                 // console.log(error);
             }
-            setProgressStatus((((i+1)*100)/supportStaffObjArr.length).toFixed(1));
+            setProgressStatus((((i + 1) * 100) / supportStaffObjArr.length).toFixed(1));
         }
     }
 
@@ -424,7 +434,7 @@ const CreateExam = () => {
 
         document.getElementById('progress-container').classList.toggle('invisible');
 
-        
+
         let examTime = convertToAMPM(exam.examTime);
         // if(Number(exam.examTime.substring(0, 2)) === 12) { // For 12:00 PM
         //     examTime = `${Number(exam.examTime.substring(0, exam.examTime.indexOf(':')))}:${exam.examTime.substring(exam.examTime.indexOf(':') + 1)} PM`;
@@ -436,7 +446,7 @@ const CreateExam = () => {
         // else {
         //     examTime = `${Number(exam.examTime.substring(0, exam.examTime.indexOf(':')))}:${exam.examTime.substring(exam.examTime.indexOf(':') + 1)} AM`;
         // }
-        
+
 
         const examCreated = await scheduleExam();
 
@@ -461,7 +471,7 @@ const CreateExam = () => {
         var s = 0;
         dispatch(toggleLoadingStatus());
         // console.log(excelData.length)
-        
+
         for (let i = 0, s = 0; i < excelData.length; i++) {
             const res = await axios.post(`${host}/api/student/create`, {
                 studentName: excelData[i]["Name"],
@@ -632,8 +642,8 @@ const CreateExam = () => {
                 <div className='border flex flex-col gap-2 p-5 bg-purple-500 text-white font-medium rounded-md '>
                     <span>{activityStatus}</span>
                     <div className="flex gap-2">
-                    <span>Completed&nbsp;:</span>
-                    <span>{progressStatus}%</span>
+                        <span>Completed&nbsp;:</span>
+                        <span>{progressStatus}%</span>
                     </div>
                 </div>
             </div>

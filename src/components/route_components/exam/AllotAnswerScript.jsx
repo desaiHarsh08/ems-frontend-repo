@@ -74,27 +74,22 @@ const AllotAnswerScript = () => {
                 email: auth["user-credentials"].user.email
             }
         });
-        const dataArr = res.data.payload;
+        let dataArr = res.data.payload;
+        dataArr = dataArr.filter((ele) => ele.isPresent == true);
         console.log(dataArr)
-        // for (let i = 0; i < dataArr.length; i++) {
-        //     if (dataArr[i].studentUID.length < 10) {
-        //         dataArr[i].studentUID = dataArr[i].studentUID.padStart(10, 0);
-        //     }
-        // }
+
+
         let distributed = 0;
         if (!examinersArr) { return; }
 
         let totalAnswerScripts = 0;
-        for (let i = 0; i < exam.examLocations.length; i++) {
-            let floor = exam.examLocations[i];
-            let rooms = floor.rooms;
-            for (let j = 0; j < rooms.length; j++) {
-                console.log("in allot as loop, room:", rooms[j]);
-                console.log(`totalAnswerSciprts = ${totalAnswerScripts} + ${rooms[j].answerScript.actual}`);
-                totalAnswerScripts += rooms[j].answerScript.actual;
+        for(let i = 0; i < dataArr.length; i++) {
+            console.log(dataArr[i].isPresent)
+            if(dataArr[i].isPresent == true) {
+                totalAnswerScripts += 1;
             }
         }
-        console.log("totalAnswerScripts:", totalAnswerScripts)
+        console.log("ts:", totalAnswerScripts)
 
         for (let i = 0; i < examinersArr.length; i++) {
             if (Number(examinersArr[i].total)) {
@@ -104,6 +99,8 @@ const AllotAnswerScript = () => {
 
         console.log("initial:", { totalStudents: totalAnswerScripts, distributed, left: dataArr.length - distributed })
         setStats({ totalStudents: totalAnswerScripts, distributed, left: totalAnswerScripts - distributed });
+
+
 
         setStudentsArr(dataArr);
         setIsLoaded(false);

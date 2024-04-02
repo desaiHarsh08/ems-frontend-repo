@@ -141,6 +141,7 @@ const ExaminerWorkspace = () => {
                     "Sr no.": i + 1,
                     Name: response.data.payload[i].studentName,
                     "Roll no.": response.data.payload[i].studentUID,
+                    "Exam Name": response.data.payload[i].examDetails.examName,
                 });
             }
             if(data.length === 0) {
@@ -152,7 +153,7 @@ const ExaminerWorkspace = () => {
             }
             else {
                 
-                exportToExcel(data, "allotment_register.xlsx");
+                exportToExcel(data, `${exam.examName}.xlsx`);
             }
         } catch (error) {
             console.log(error);
