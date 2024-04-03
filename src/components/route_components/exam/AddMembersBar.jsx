@@ -119,7 +119,7 @@ const AddMembersBar = ({ toogleAddMembersBar, setToogleAddMembersBar, labelAddMe
                 examId: exam._id
             };
             if (getInfo().userType === 'INVIGILATOR') {
-                memberObj["roomNumber"] = excelData[i]["Room no"];
+                memberObj["roomNumber"] = excelData[i]["Room No"];
             }
             if (getInfo().userType === 'EXAMINER') {
 

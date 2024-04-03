@@ -2,7 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const roomNumberSlice = createSlice({
     name: 'roomNumber',
-    initialState: { roomNumber: JSON.parse(localStorage.getItem('room-number')) },
+    // initialState: { roomNumber: JSON.parse(localStorage.getItem('room-number')) },
+    initialState: { roomNumber: localStorage.getItem('room-number') },
     reducers: {
         setRoomNumber: (state, action) => {
             localStorage.setItem('room-number', action.payload.roomNumber);

@@ -7,6 +7,8 @@ import roomNumberReducer from "./features/roomNumberSlice";
 import examReducer from "./features/examSlice";
 import totalSeatsReducer from "./features/totalSeatSlice";
 import sidebarToogleReducer from "./features/sidebarToggleSlice";
+import breadCrumbNavReducer from "./features/breadCrumbNavSlice";
+import previousExamFlagReducer from "./features/previousExamSlice";
 
 export const store = configureStore({
     reducer: {
@@ -18,5 +20,7 @@ export const store = configureStore({
         exam: examReducer,
         totalSeats: totalSeatsReducer,
         sidebarToogle: sidebarToogleReducer,
+        breadCrumbNav: breadCrumbNavReducer,
+        previousExamFlag: previousExamFlagReducer
     }
 })

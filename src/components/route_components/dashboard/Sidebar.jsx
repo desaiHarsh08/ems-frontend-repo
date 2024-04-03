@@ -60,24 +60,27 @@ const Sidebar = () => {
                     </li>
                     <li>
                         <p onClick={() => { handleLink('upcoming-exams') }} className={`cursor-pointer text-[14px] flex items-center gap-2 ${location.pathname.endsWith('upcoming-exams') ? 'text-[#00ffff]' : 'text-white'}`}>
-                        <TbBrandNextjs />
+                            <TbBrandNextjs />
                             <span>Upcoming Exam</span>
-                        </p>
-                    </li>
-                    <li>
-                        <p onClick={() => { handleLink('previous-exams') }} className={`cursor-pointer text-[14px] flex items-center gap-2 ${location.pathname.endsWith('previous-exams') ? 'text-[#00ffff]' : 'text-white'}`}>
-                        <BiSolidSkipPreviousCircle />
-                            <span>Previous Exam</span>
                         </p>
                     </li>
                     {
                         auth['user-credentials'].user.userType === 'ADMIN' ?
-                            <li>
-                                <p onClick={() => { handleLink('create-exam') }} className={`cursor-pointer text-[14px] flex items-center gap-2 ${location.pathname.endsWith('create-exam') ? 'text-[#00ffff]' : 'text-white'}`}>
-                                    <IoAddOutline />
-                                    <span>Create Exam</span>
-                                </p>
-                            </li> : ''}
+                            <>
+                                <li>
+                                    <p onClick={() => { handleLink('previous-exams') }} className={`cursor-pointer text-[14px] flex items-center gap-2 ${location.pathname.endsWith('previous-exams') ? 'text-[#00ffff]' : 'text-white'}`}>
+                                        <BiSolidSkipPreviousCircle />
+                                        <span>Previous Exam</span>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p onClick={() => { handleLink('create-exam') }} className={`cursor-pointer text-[14px] flex items-center gap-2 ${location.pathname.endsWith('create-exam') ? 'text-[#00ffff]' : 'text-white'}`}>
+                                        <IoAddOutline />
+                                        <span>Create Exam</span>
+                                    </p>
+                                </li>
+                            </>
+                            : ''}
                     {
                         (auth['user-credentials'].user.userType === 'ADMIN' || auth['user-credentials'].user.userType === 'EXAM_OC') ?
                             <li>

@@ -18,7 +18,9 @@ const SeatsDisplay = () => {
   const auth = useSelector((state) => state.auth);
   const loading = useSelector((state) => state.loadingStatus);
   const floorNumber = (useSelector((state) => state.floorNumber)).floorNumber;
-  const roomNumber = (useSelector((state) => state.roomNumber)).roomNumber;
+  // const roomNumber = (useSelector((state) => state.roomNumber)).roomNumber;
+  console.log("room-number:", localStorage.getItem('room-number'))
+  const roomNumber = localStorage.getItem('room-number');
 
   const [studentsArr, setStudentArr] = useState([]);
   const [isReadOnly, setIsReadOnly] = useState(false);
@@ -46,11 +48,11 @@ const SeatsDisplay = () => {
           }
         }
       );
-      // console.log(response);
+      console.log(response);
       setIsReadOnly(true);
       
     } catch (error) {
-      // console.log(error);
+      console.log(error);
       return null;
     }
   }
@@ -73,10 +75,10 @@ const SeatsDisplay = () => {
           }
         }
       );
-      // console.log(response.data.payload);
+      console.log("students from db:", response.data.payload);
       setStudentArr(response.data.payload);
     } catch (error) {
-      // console.log(error);
+      console.log(error);
     }
   }
 

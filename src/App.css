@@ -129,7 +129,10 @@
   }
 }
 
-
+.container-display-tiles {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
 
 @media (max-width: 640px) {
   #exams-card {
@@ -170,6 +173,19 @@
   }
   #exams-card .exam ul li p {
     text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  #exam-function-container {
+    height: 49vh !important;
+  }
+  .container-display-tiles {
+    /* padding-top: 202px; */
+    height: 40vh !important;
+    /* border: 2px solid red; */
+    /* overflow: auto;
+    padding-bottom: 24px; */
   }
 }
 

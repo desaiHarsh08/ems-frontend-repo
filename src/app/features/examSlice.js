@@ -6,6 +6,14 @@ const examSlice = createSlice({
     reducers: {
         setExam: (state, action) => {
             console.log("in setExam: ", action.payload.exam);
+
+            for(let i = 0; i < action.payload.exam.examLocations.length; i++) { // Iterate floors 
+                for(let j = 0; j < action.payload.exam.examLocations[i].rooms.length; j++) {
+                    action.payload.exam.examLocations[i].rooms[j].roomNumber = action.payload.exam.examLocations[i].rooms[j].roomNumber.trim(); 
+                }
+            }
+
+
             state.examSelected = action.payload.exam;
             for (let i = 0; i < state.examSelected.examLocations.length; i++) {
                 let floor = state.examSelected.examLocations[i];
@@ -15,6 +23,10 @@ const examSlice = createSlice({
                 }
                 state.examSelected.examLocations[i] = floor;
             }
+
+
+            
+
 
             localStorage.setItem('exam', JSON.stringify(action.payload.exam));
             return state;

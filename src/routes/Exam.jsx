@@ -19,6 +19,7 @@ import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
 import AllotAnswerScript from '../components/route_components/exam/AllotAnswerScript';
 import ExaminerWorkspace from '../components/route_components/exam/ExaminerWorkspace';
+import { toogleBreadCrumbNavItem } from '../app/features/breadCrumbNavSlice';
 
 const Exam = () => {
 
@@ -33,6 +34,9 @@ const Exam = () => {
     const roomNumber = (useSelector((state) => state.roomNumber)).roomNumber;
     const exam = (useSelector((state) => state.exam)).examSelected;
 
+    const breadCrumbNav = (useSelector((state) => state.breadCrumbNav));
+    console.log(breadCrumbNav);
+
     const [dateTimeString, setDateTimeString] = useState(`${exam.examDate} ${exam.examTime.toString().substring(0, 9)}`);
 
     const [toogleExamFunctionsDisplay, setToogleExamFunctionsDisplay] = useState(true);
@@ -43,7 +47,11 @@ const Exam = () => {
     const [toogleAllot, setToogleAllot] = useState(false);
     const [labelAddMembersBar, setLabelAddMembersBar] = useState('');
 
+    // const [breadCrumbNav, setBreadCrumbNav] = useState({ floors: false, rooms: false });
+
     const [studentsArr, setStudentsArr] = useState([]);
+
+    
 
     useEffect(() => {
         if (auth['user-credentials'].user.userType == 'INVIGILATOR') {
@@ -81,13 +89,23 @@ const Exam = () => {
         })();
     }, []);
 
+    useEffect(() => {
+        handleBreadCrumbChange("floors");
+    }, [])
+    const handleBreadCrumbChange = (navItem) => {
+        console.log("handleBreadCrumbChange() called, for", navItem);
+        dispatch(toogleBreadCrumbNavItem({navItem}))
+    }
+
     const floorNav = () => {
-        document.getElementById('bread-crumb').classList.toggle('invisible');
+        // document.getElementById('bread-crumb').classList.toggle('invisible');
+        handleBreadCrumbChange("floors");
         navigate(`/dashboard/${exam._id}`, { replace: true });
     }
 
     const roomNav = () => {
-        document.getElementById('roomNav').classList.toggle('hidden');
+        // document.getElementById('roomNav').classList.toggle('hidden');
+        handleBreadCrumbChange("rooms");
         navigate(`/dashboard/${exam._id}/floor-${roomNumber}`, { replace: true });
     }
 
@@ -99,6 +117,7 @@ const Exam = () => {
         }
 
         else if (label.toLowerCase() === "mark attendance") {
+            // handleBreadCrumbChange("floors");
             // console.log("dateTimeString:", dateTimeString);
             const dateTime = new Date(dateTimeString);
             const currentDate = new Date();
@@ -145,6 +164,8 @@ const Exam = () => {
             setToogleExamFunctionsDisplay(true);
             setToogleAttendanceDisplay(false);
             setToogleAllot(false);
+            handleBreadCrumbChange("reset");
+            navigate(`/dashboard/${exam._id}`, { replace: true });
         }
     }
 
@@ -275,8 +296,8 @@ const Exam = () => {
     return (
         <div className='p-2 h-full'>
             {/* EXAM DETAILS */}
-            <div className='text-base h-40'>
-                <h3 className='text-xl font-semibold my-6 uppercase'>Exam Details</h3>
+            <div className='text-base '>
+                <h3 className='text-xl font-semibold sm:my-6 uppercase'>Exam Details</h3>
                 <table className='w-full text-center border my-9'>
                     <thead className='text-center'>
                         <tr>
@@ -288,9 +309,9 @@ const Exam = () => {
                     </thead>
                     <tbody>
                         <tr>
-                            <td className='border w-1/3'>{exam.examName}</td>
-                            <td className='border w-1/3'>{exam.examDate.toString().substring(0, 10)}</td>
-                            <td className='border w-1/3'>{exam.examTime.toString().substring(0, 9)}</td>
+                            <td className='border w-1/3 py-2'>{exam.examName}</td>
+                            <td className='border w-1/3 py-2'>{exam.examDate.toString().substring(0, 10)}</td>
+                            <td className='border w-1/3 py-2'>{exam.examTime.toString().substring(0, 9)}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -301,7 +322,7 @@ const Exam = () => {
             {toogleExamFunctionsDisplay === true && auth['user-credentials'].user.userType !== 'INVIGILATOR' ?
                 <>
                     {/* EXAM FUNCTIONS */}
-                    <div className=' flex flex-wrap justify-center items-center gap-5 h-[65vh] sm:h-[50vh] overflow-y-auto md:overflow-y-hidden'>
+                    <div id='exam-function-container' className=' flex flex-wrap justify-center border  items-center gap-5 h-[60vh] sm:h-[60vh] overflow-y-auto py-7'>
                         {/* ADD MEMBERS */}
                         <ExamFunctionCard handleExamFunctionClick={handleExamFunctionClick} label={"Add Examiners"} icon={<IoMdPersonAdd />} bgColor={'bg-red-500'} />
                         <ExamFunctionCard handleExamFunctionClick={handleExamFunctionClick} label={"Add support staff"} icon={<IoIosPersonAdd />} bgColor={'bg-yellow-400'} />
@@ -324,9 +345,16 @@ const Exam = () => {
 
                 </> :
                 <div>
+                    {console.log(auth['user-credentials'].user.userType)}
                     {
-                        auth['user-credentials'].user.userType !== 'EXAMINER' &&
-                        <button onClick={() => { handleExamFunctionClick('display_functions') }} className='bg-slate-200 pl-1 pr-2 py-2 rounded-md '>Exam Functions</button>}
+                        (auth['user-credentials'].user.userType === 'EXAM_OC' || auth['user-credentials'].user.userType === 'ADMIN') ?
+                        <button 
+                            onClick={() => { handleExamFunctionClick('display_functions') }} 
+                            className='bg-slate-200 pl-1 pr-2 py-2 rounded-md '
+                        >
+                            Exam Functions
+                        </button> : ''
+                    }
                 </div>
             }
 
@@ -338,8 +366,9 @@ const Exam = () => {
                     <div id='bread-crumb' className=' flex rounded-md my-1'>
 
                         <ul className={`${location.pathname.includes(`/dashboard/${exam._id}/floor-${floorNumber}`) ? 'bg-slate-300' : ''} text-slate-500 text-[14px] p-1 flex gap-2`}>
-                            {console.log("url:", location.pathname, "window:", window.location.href)}
-                            {window.location.href.includes(`#/dashboard/${exam._id}/floor-${floorNumber}`) ?
+                            {/* {console.log("url:", location.pathname, "window:", window.location.href)} */}
+                            {/* {window.location.href.includes(`#/dashboard/${exam._id}/floor-${floorNumber}`) ? */}
+                            { breadCrumbNav.floors ?
                                 <>
                                     <li id='floorNav'>
                                         <p className='cursor-pointer' onClick={floorNav} to={`/dashboard/${exam._id}`} >Floors</p>
@@ -350,7 +379,8 @@ const Exam = () => {
                                 </>
                                 : ''}
                             {
-                                window.location.href.endsWith(`/dashboard/${exam._id}/floor-${floorNumber}/room-${roomNumber}`) ?
+                                // window.location.href.endsWith(`/dashboard/${exam._id}/floor-${floorNumber}/room-${roomNumber}`) ?
+                                breadCrumbNav.floors && breadCrumbNav.rooms ?
                                     <>
                                         <li id='roomNav'>
                                             <p className='cursor-pointer' onClick={roomNav} to={`/dashboard/${exam._id}/floor-${floorNumber}`} >Rooms</p>
@@ -364,9 +394,10 @@ const Exam = () => {
                 toogleAssignMarksDisplay &&
                     <ExaminerWorkspace />
             }
+                {/* {console.log(tooglAttendanceDisplay)} */}
             {
                 tooglAttendanceDisplay ?
-                    <div className="exam-locations-container border h-[50vh] overflow-y-auto">
+                    <div className="exam-locations-container border  h-[50vh] overflow-y-auto container-display-tiles">
                         <Outlet />
                     </div> : ''}
 
@@ -375,7 +406,7 @@ const Exam = () => {
 
 
             {/* ANSWER-SCRIPT COUNTING TABLE */}
-            {console.log(toogleCollectAnswerScriptDisplay)}
+            {/* {console.log(toogleCollectAnswerScriptDisplay)} */}
             {
                 toogleCollectAnswerScriptDisplay === true && exam?.examLocations.length !== 0 &&
                 <div id="answer-script-counting" className="my-7 answer-script-counting h-[50vh] overflow-y-scroll">

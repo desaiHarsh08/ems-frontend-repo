@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { setFloorNumber } from '../../../app/features/floorNumberSlice';
+import { toogleBreadCrumbNavItem } from '../../../app/features/breadCrumbNavSlice';
 
 const FloorsDisplay = () => {
 
@@ -16,37 +17,84 @@ const FloorsDisplay = () => {
     const exam = (useSelector((state) => state.exam)).examSelected;
     const auth = useSelector((state) => state.auth);
     const loading = useSelector((state) => state.loadingStatus);
+    const breadCrumbNav = (useSelector((state) => state.breadCrumbNav));
 
     const [floorsDone, setFloorsDone] = useState([]);
 
     const examIds = JSON.parse(localStorage.getItem('examids'));
 
     const [floorNumberForNonAdmin, setFloorNumberForNonAdmin] = useState();
+    const [thisExamUser, setThisExamUser] = useState();
+
+
+
+    useEffect(() => {
+        if (!thisExamUser) {
+
+            (async () => {
+                const response = await axios.post(
+                    `${host}/api/common_role_assign/get-by-role-name-date`,
+                    {
+                        userType: auth["user-credentials"].user.userType,
+                        examDate: exam.examDate,
+                        examName: exam.examName
+                    },
+                    {
+                        headers: {
+                            accessToken: auth["user-credentials"].accessToken,
+                            refreshToken: auth["user-credentials"].refreshToken,
+                            email: auth["user-credentials"].user.email
+                        }
+                    }
+                );
+                console.log("thisexamuser; ", response.data.payload)
+
+
+                if (auth["user-credentials"].user.userType !== 'ADMIN') {
+                    let tmpObj = response.data.payload.find((user) => user.email === auth["user-credentials"].user.email);
+                    console.log(tmpObj.roomNumber.trim());
+                    setFloorNumberForNonAdmin(tmpObj.roomNumber.trim());
+                    setThisExamUser(tmpObj);
+                }
+            })();
+        }
+    }, [thisExamUser]);
 
     useEffect(() => {
         // document.getElementById('bread-crumb').classList.remove('invisible')
+
+
         fetchFloorStatus();
     }, []);
 
     useEffect(() => {
-        if (exam) {
+        if (exam && thisExamUser) {
             // console.log("exam:", exam, auth)
+            console.log("here u2: thisexu", thisExamUser)
+            let tmfn;
             for (let i = 0; i < exam.examLocations.length; i++) {
                 let floor = exam.examLocations[i];
-                // // console.log("in loop floor:", floor)
+                // console.log("in loop floor:", floor)
                 for (let j = 0; j < floor.rooms.length; j++) {
                     for (let k = 0; k < floor.rooms.length; k++) {
-                        // // console.log(floor.rooms[k])
-                        if (floor.rooms[k].roomNumber == auth['user-credentials'].user.roomNumber) {
+                        // console.log(floor.rooms[k])
+                        // console.log(`floor.rooms[k].roomNumber: ${floor.rooms[k].roomNumber}, ${floor.rooms[k].roomNumber?.length}`, `auth['user-credentials'].user.roomNumber: ${auth['user-credentials'].user.roomNumber}, ${auth['user-credentials'].user.roomNumber.length}`)
+                        if (floor.rooms[k].roomNumber?.trim() == thisExamUser.roomNumber?.trim()) {
                             // console.log(exam.examLocations[i]);
+                            tmfn = exam.examLocations[i];
                             setFloorNumberForNonAdmin(exam.examLocations[i]);
                             break;
                         }
                     }
                 }
             }
+            console.log("tmfn: ", tmfn);
+            if (!tmfn) {
+
+
+            }
         }
-        // console.log(floorNumberForNonAdmin)
+        console.log(floorNumberForNonAdmin)
     }, [exam, floorNumberForNonAdmin]);
 
     const isFloorAttendanceMarked = async (floorNumber) => {
@@ -93,15 +141,22 @@ const FloorsDisplay = () => {
         });
     };
 
+    const handleBreadCrumbChange = (navItem) => {
+        console.log("handleBreadCrumbChange() called, for", navItem);
+        dispatch(toogleBreadCrumbNavItem({ navItem }))
+    }
+
     const handleFloorClick = (floorNumber) => {
-        // // console.log(floorNumber);
+        handleBreadCrumbChange("floors");
+        console.log(floorNumber);
         dispatch(setFloorNumber({ floorNumber }));
         // // console.log("ok");
         navigate(`floor-${floorNumber}`, { replace: true });
     }
 
     return (
-        <div className='flex flex-col gap-3 justify-center items-center py-7 '>
+        <div className='flex flex-col gap-3 justify-center items-center py-7 ' >
+            {/* floordisplay */}
             {
                 exam && exam.examLocations && getSortedFloors(exam.examLocations)?.map((floor, index) => {
                     if ((auth['user-credentials'].user.userType === 'ADMIN') || (auth['user-credentials'].user.userType === 'EXAM_OC')) {
@@ -119,14 +174,14 @@ const FloorsDisplay = () => {
                 })
             }
 
-{console.log('here')}
+            {/* {console.log('here', floorNumberForNonAdmin)} */}
             {
-            // // console.log(floorNumberForNonAdmin)
-                exam && exam.examLocations && floorNumberForNonAdmin &&
+                // // console.log(floorNumberForNonAdmin)
+                exam && thisExamUser && exam.examLocations && floorNumberForNonAdmin &&
                 <div onClick={() => { handleFloorClick(floorNumberForNonAdmin?.floorNumber) }} to={`${floorNumberForNonAdmin?.floorNumber}`} className={`flex items-center gap-5 cursor-pointer border border-slate-400 p-3 rounded-md hover:shadow-lg ${floorsDone.includes(floorNumberForNonAdmin?.floorNumber) ? 'bg-green-400 font-medium' : ''} `}>
-                     <img src='/floor-icon-0.jpg' alt='floor-img' className='w-20' />
-                     <p className='text-xl'>Floor {floorNumberForNonAdmin?.floorNumber}</p>
-                 </div>
+                    <img src='/floor-icon-0.jpg' alt='floor-img' className='w-20' />
+                    <p className='text-xl'>Floor {floorNumberForNonAdmin?.floorNumber}</p>
+                </div>
             }
         </div>
     )

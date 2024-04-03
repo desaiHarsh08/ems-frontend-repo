@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { setRoomNumber } from '../app/features/roomNumberSlice';
 import { setTotalSeats } from '../app/features/totalSeatSlice';
 import axios from 'axios';
+import { toogleBreadCrumbNavItem } from '../app/features/breadCrumbNavSlice';
 
 const RoomsDisplay = () => {
 
@@ -19,28 +20,61 @@ const RoomsDisplay = () => {
     const loading = useSelector((state) => state.loadingStatus);
     const floorNumber = (useSelector((state) => state.floorNumber)).floorNumber;
     console.log(floorNumber)
-if(!floorNumber) {
-    return 'no floor selected';
-}
+    if (!floorNumber) {
+        return 'no floor selected';
+    }
 
     console.log(exam.examLocations.find((ele) => ele.floorNumber == floorNumber));
     const { rooms } = exam.examLocations.find((ele) => ele.floorNumber == floorNumber);
+    console.log(rooms)
 
     const [roomsDone, setRoomsDone] = useState([]);
     const [userRoom, setUserRoom] = useState(null);
+    const [thisExamUserArr, setThisExamUserArr] = useState([]);
+
+    useEffect(() => {
+        // if (auth['user-credentials'].user.userType !== 'ADMIN') {
+            (async () => {
+                const response = await axios.post(
+                    `${host}/api/common_role_assign/get-by-role-name-date`,
+                    {
+                        userType: auth["user-credentials"].user.userType,
+                        examDate: exam.examDate,
+                        examName: exam.examName
+                    },
+                    {
+                        headers: {
+                            accessToken: auth["user-credentials"].accessToken,
+                            refreshToken: auth["user-credentials"].refreshToken,
+                            email: auth["user-credentials"].user.email
+                        }
+                    }
+                );
+                console.log("thisexamuser; ", response.data.payload)
+                setThisExamUserArr(response.data.payload);
+
+            })();
+        // }
+    }, [])
 
     useEffect(() => {
         // console.log(document.getElementById('bread-crumb'))
         // document.getElementById('bread-crumb').classList.remove('invisible')
         fetchRoomData();
-        if(auth['user-credentials'].user.userType === 'INVIGILATOR') {
-            const tmp = rooms.find(ele => ele.roomNumber == auth['user-credentials'].user.roomNumber.toString());
-            // console.log(tmp)
+        if (auth['user-credentials'].user.userType === 'INVIGILATOR' && thisExamUserArr.length > 0) {
+            console.log(thisExamUserArr);
+            let user = thisExamUserArr.find((ele) => ele.email ==  auth["user-credentials"].user.email);
+            console.log(user);
+            const tmp = rooms.find(ele => ele.roomNumber == user.roomNumber.toString());
             setUserRoom(tmp);
         }
-    }, [userRoom]);
+    }, [userRoom, thisExamUserArr]);
 
-   
+
+    const handleBreadCrumbChange = (navItem) => {
+        console.log("handleBreadCrumbChange() called, for", navItem);
+        dispatch(toogleBreadCrumbNavItem({ navItem }))
+    }
 
     const getSortedRooms = (rooms) => {
         const sortedRooms = rooms.slice().sort((a, b) => {
@@ -74,9 +108,9 @@ if(!floorNumber) {
         // console.log(nonNullResults);
         for (let index = 0; index < nonNullResults.length; index++) {
             const tmp = nonNullResults[index].uniqueId;
-            tmpRoomsDone.push(tmp.substring(tmp.lastIndexOf('/')+1));
+            tmpRoomsDone.push(tmp.substring(tmp.lastIndexOf('/') + 1));
         }
-        // console.log(tmpRoomsDone);
+        console.log(tmpRoomsDone);
         setRoomsDone(tmpRoomsDone);
     };
 
@@ -107,37 +141,38 @@ if(!floorNumber) {
     }
 
     const handleRoomClick = ({ roomNumber, seatsArr }) => {
-        // console.log(roomNumber, seatsArr.length);
-        dispatch(setRoomNumber({roomNumber: roomNumber}));
-        dispatch(setTotalSeats({totalSeats: seatsArr.length}));
+        console.log(roomNumber, seatsArr.length);
+        handleBreadCrumbChange("rooms");
+        dispatch(setRoomNumber({ roomNumber: roomNumber }));
+        dispatch(setTotalSeats({ totalSeats: seatsArr.length }));
         // console.log(`/dashboard/${exam._id}/floor-${floorNumber}/room-${roomNumber}`)
         navigate(`/dashboard/${exam._id}/floor-${floorNumber}/room-${roomNumber}`, { replace: true });
-    
-      }
+
+    }
 
     return (
         <div className='my-3 '>
-
+            {/* RoomsDisplay */}
             <div className='flex justify-center gap-3 floor-room-container flex-wrap overflow-auto'>
                 {(auth['user-credentials'].user.userType === 'ADMIN' || auth['user-credentials'].user.userType === 'EXAM_OC') &&
                     getSortedRooms(rooms).map((room, index) => (
-                        
+
                         <div key={`room-${index}`} onClick={() => { handleRoomClick(room) }} className={`flex items-center gap-5 cursor-pointer border border-slate-400 p-3 rounded-md hover:shadow-lg ${roomsDone.includes(room.roomNumber) ? 'bg-green-400 font-medium' : ''}`}>
                             <img src='/room.webp' alt='Room' className='w-20' />
                             <p className='text-xl'>{room.roomNumber}</p>
                         </div>
                     ))
                 }
-                
-                
+
+
                 {(userRoom && auth['user-credentials'].user.userType === 'INVIGILATOR') &&
                     <div onClick={() => { handleRoomClick(userRoom) }} className={`flex items-center gap-5 cursor-pointer border border-slate-400 p-3 rounded-md hover:shadow-lg ${roomsDone.includes(userRoom.roomNumber) ? 'bg-green-400 font-medium' : ''}`}>
                         <img src='/room.webp' alt='Room' className='w-20' />
                         <p className='text-xl'>{userRoom.roomNumber}</p>
                     </div>
                 }
-            
-                
+
+
 
             </div>
         </div>

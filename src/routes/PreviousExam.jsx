@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ExamCard from '../components/route_components/dashboard/ExamCard';
+import { tooglePreviousExam } from '../app/features/previousExamSlice';
 
 const PreviousExams = () => {
 
@@ -15,6 +16,8 @@ const PreviousExams = () => {
     const host = useSelector((state) => state.host.host);
     const loading = useSelector((state) => state.loadingStatus);
     const auth = useSelector((state) => state.auth);
+    const previousExamFlag = useSelector((state) => state.previousExamFlag).previousExamFlag;
+    console.log(previousExamFlag);
 
     // // console.log(sidebarToogle)
 
@@ -48,9 +51,16 @@ const PreviousExams = () => {
                 console.log(error);
             }
         })();
-
+        
 
     }, []);
+
+    useEffect(() => {
+        if(auth["user-credentials"].user.userType.toUpperCase() !== "ADMIN" || 
+        auth["user-credentials"].user.userType.toUpperCase() !== "EXAM_OC") {
+            navigate('/dashboard', {replace: true});
+        }
+    }, [])
 
     const fetchUserByRecentExam = async () => {
         try {
@@ -80,7 +90,7 @@ const PreviousExams = () => {
         if (examsObj) {
             checkExams();
         }
-        // console.log(examDone)
+        console.log(examDone)
     }, [examsObj]);
 
 
@@ -132,7 +142,7 @@ const PreviousExams = () => {
                 tmp.push(exam.examName);
             }
         }
-        // console.log("Exams with all floors done:", tmp);
+        console.log("Exams with all floors done:", tmp);
         // Set the state or do something with the tmp array
         setExamsDone(tmp)
     };

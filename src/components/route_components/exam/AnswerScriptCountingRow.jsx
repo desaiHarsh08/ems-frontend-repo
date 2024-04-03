@@ -65,7 +65,7 @@ const AnswerScriptCountingRow = ({ indexFloor, floorNumber, room, handleChangeEx
                 <li className='py-2 w-[14.28%]  text-center flex justify-center items-center border-r border-slate-400'><p>{attendedStudents}</p></li>
                 <li className='py-2 w-[14.28%]  text-center flex justify-center items-center border-r border-slate-400'>
                     <label htmlFor="actualScripts"></label>
-                    <input type="number" name='actual' id='actual' value={actual} onChange={handleChange} className='px-4 py-1 border rounded-md text-center w-full' />
+                    <input type="number" name='actual' id='actual' value={attendedStudents} onChange={handleChange} className='px-4 py-1 border rounded-md text-center w-full' />
                 </li>
                 <li className='py-2 w-[14.28%]  text-center flex justify-center items-center border-r border-slate-400'>
                     {
