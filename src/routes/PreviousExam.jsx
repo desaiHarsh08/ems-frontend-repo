@@ -56,10 +56,18 @@ const PreviousExams = () => {
     }, []);
 
     useEffect(() => {
-        if(auth["user-credentials"].user.userType.toUpperCase() !== "ADMIN" || 
-        auth["user-credentials"].user.userType.toUpperCase() !== "EXAM_OC") {
+        const userType = auth["user-credentials"].user.userType.toUpperCase();
+        console.log("in previous exam,", userType);
+
+        if (!["ADMIN", "EXAM_OC"].includes(userType)) {
             navigate('/dashboard', {replace: true});
         }
+        
+        // if(auth["user-credentials"].user.userType.toUpperCase() !== "ADMIN" || 
+        // auth["user-credentials"].user.userType.toUpperCase() !== "EXAM_OC") {
+        //     navigate('/dashboard', {replace: true});
+        // }
+        
     }, [])
 
     const fetchUserByRecentExam = async () => {

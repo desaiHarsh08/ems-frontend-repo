@@ -20,7 +20,7 @@ const DashboardHome = () => {
     // // console.log(sidebarToogle)
 
     const examIds = JSON.parse(localStorage.getItem('examids'));
-    // console.log(auth, examIds)
+    console.log(auth, examIds)
 
 
 
