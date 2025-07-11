@@ -15,7 +15,7 @@ const Root = () => {
 
     const dispatch = useDispatch();
 
-    const [otpResendTime, setOtpResendTime] = useState(120);
+    const [otpResendTime, setOtpResendTime] = useState(1200);
     const [intervalId, setIntervalId] = useState(null);
     const [credentials, setCredentials] = useState({ email: '', otp: '' });
     const [buttonInfo, setButtonInfo] = useState({ buttonDisabled: true, buttonText: "Generate OTP" });
@@ -24,7 +24,7 @@ const Root = () => {
         if (otpResendTime === 0) {
             clearInterval(intervalId);
             setIntervalId(null);
-            setOtpResendTime(120);
+            setOtpResendTime(1200);
             setButtonInfo({ buttonDisabled: !isValidEmail(credentials.email), buttonText: "Generate OTP" });
         }
     }, [otpResendTime]);

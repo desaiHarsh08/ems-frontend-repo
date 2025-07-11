@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { toggleLoadingStatus } from "../app/features/loadingSlice";
 import axios from "axios";
 import { toogleSidebar } from "../app/features/sidebarToggleSlice";
-import Exam from "./Exam";
 
 const CreateExam = () => {
   const dispatch = useDispatch();
@@ -57,7 +56,7 @@ const CreateExam = () => {
         const worksheet = workbook.Sheets[sheetName];
         const data = XLSX.utils.sheet_to_json(worksheet, { raw: true });
         setExcelData(data);
-        // // console.log('Parsed Excel Data:', data);
+        // console.log('Parsed Excel Data:', data);
       };
       reader.readAsArrayBuffer(file);
     }
@@ -126,13 +125,17 @@ const CreateExam = () => {
     const floors = Array.from(
       new Set(excelData.flat().map((ele) => ele["Floor No."]))
     );
-    // console.log(floors)
     const uniqueRoomNumbers = Array.from(
       new Set(excelData.flat().map((ele) => ele["Room No."]))
     );
-    // console.log("Unique Room Numbers:", uniqueRoomNumbers);
-    // console.log(floors, uniqueRoomNumbers)
     const exmpt = [];
+
+    // Helper function to extract numeric part from floor number
+    const getNumericFloor = (floorStr) => {
+      const match = floorStr.match(/\d+/);
+      return match ? parseInt(match[0]) : 0;
+    };
+
     for (let i = 0; i < floors.length; i++) {
       for (let j = 0; j < uniqueRoomNumbers.length; j++) {
         let floorStr = floors[i];
@@ -142,53 +145,50 @@ const CreateExam = () => {
             ele["Floor No."] === floorStr &&
             ele["Room No."] === uniqueRoomNumbers[j]
         );
-        // console.log(floorStr, uniqueRoomNumbers[j], data)
+
         if (data.length !== 0) {
-          // console.log(`${floorStr}, room-${uniqueRoomNumbers[j]}, data-${data}`)
-          console.log("floors[i]:", floors[i]);
           let obj = {
-            floorNumber: Number(floors[i].toString()),
+            floorNumber: getNumericFloor(floorStr),
             rooms: [],
           };
           obj.rooms.push({
             roomNumber: uniqueRoomNumbers[j],
             seatsArr: data.length,
           });
+          console.log("exmpt, ele obj:", obj);
           exmpt.push(obj);
         }
       }
     }
-    // console.log("done,", exmpt)
+
     const tmpSaved = exam;
-    // console.log(tmpSaved)
     const all = [];
+
+    // Group by floor number
     for (let i = 0; i < floors.length; i++) {
-      let arr = exmpt.filter(
-        (ele) => ele.floorNumber == Number(floors[i].toString().charAt(0))
-      );
-      // console.log(arr);
+      const numericFloor = getNumericFloor(floors[i]);
+      let arr = exmpt.filter((ele) => ele.floorNumber === numericFloor);
       all.push(arr);
     }
-    // console.log(all)
+
     const newExmpt = [];
     for (let i = 0; i < all.length; i++) {
-      let obj = {
-        floorNumber: 1,
-        rooms: [],
-      };
-      for (let j = 0; j < all[i].length; j++) {
-        obj.floorNumber = all[i][j].floorNumber;
-        obj.rooms.push(all[i][j].rooms[0]);
+      if (all[i].length > 0) {
+        let obj = {
+          floorNumber: all[i][0].floorNumber,
+          rooms: [],
+        };
+        for (let j = 0; j < all[i].length; j++) {
+          obj.rooms.push(all[i][j].rooms[0]);
+        }
+        newExmpt.push(obj);
       }
-      newExmpt.push(obj);
     }
-    tmpSaved.examLocations = newExmpt;
 
-    // console.log(tmpSaved);
+    tmpSaved.examLocations = newExmpt;
 
     for (let i = 0; i < tmpSaved.examLocations.length; i++) {
       for (let j = 0; j < tmpSaved.examLocations[i].rooms.length; j++) {
-        // // console.log(tmpSaved.examLocations[i].rooms[j])
         tmpSaved.examLocations[i].rooms[j]["answerScript"] = {
           expected: tmpSaved.examLocations[i].rooms[j].seatsArr.length,
           actual: tmpSaved.examLocations[i].rooms[j].seatsArr.length,
@@ -196,11 +196,10 @@ const CreateExam = () => {
         };
       }
     }
-    // console.log(tmpSaved);
 
     setExam((prev) => ({
       ...prev,
-      examLocations: exmpt,
+      examLocations: newExmpt,
     }));
 
     return tmpSaved;
@@ -224,7 +223,7 @@ const CreateExam = () => {
     setActivityStatus("Creating Exam!");
 
     let examTime = convertToAMPM(exam.examTime);
-    let endTime = convertToAMPM(exam.endTime);
+    // let endTime = convertToAMPM(exam.endTime);
     // console.log(exam.examTime.substring(0, 2));
     // if(Number(exam.examTime.substring(0, exam.examTime.indexOf(':'))) == 12) { // For 12:00 PM
     //     examTime = `${Number(exam.examTime.substring(0, exam.examTime.indexOf(':')))}:${exam.examTime.substring(exam.examTime.indexOf(':') + 1)} PM`;
@@ -350,7 +349,7 @@ const CreateExam = () => {
 
     for (let i = 0; i < invigilatorsObjArr.length; i++) {
       try {
-        const res = await axios.post(
+        await axios.post(
           `${host}/api/common_role_assign/create`,
           invigilatorsObjArr[i],
           {
@@ -442,6 +441,8 @@ const CreateExam = () => {
   };
 
   const handleSubmit = async (e) => {
+    console.log("excelData:", excelData);
+
     e.preventDefault();
     if (exam.examName == "" || exam.examDate == "") {
       Swal.fire({
@@ -484,6 +485,12 @@ const CreateExam = () => {
     // else {
     //     examTime = `${Number(exam.examTime.substring(0, exam.examTime.indexOf(':')))}:${exam.examTime.substring(exam.examTime.indexOf(':') + 1)} AM`;
     // }
+
+    if (excelData.some((ele) => ele["Exam Name"] !== exam.examName)) {
+      alert("Exam Name doesn't match with the exam-name provided in excel data");
+      document.getElementById("progress-container").classList.toggle("invisible");
+      return;
+    }
 
     const examCreated = await scheduleExam();
 
@@ -536,6 +543,7 @@ const CreateExam = () => {
             seatNumber: excelData[i]["Seat No."],
           },
           whatsappNumber: excelData[i]["WhatsApp No."],
+          studentEmail: excelData[i]["Email"],
           isPresent: true,
           email: auth["user-credentials"].user.email,
         },
