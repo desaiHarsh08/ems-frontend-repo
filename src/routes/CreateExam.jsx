@@ -6,6 +6,18 @@ import { toggleLoadingStatus } from "../app/features/loadingSlice";
 import axios from "axios";
 import { toogleSidebar } from "../app/features/sidebarToggleSlice";
 
+const studentExcelKeys = [
+  "Name",
+  "UID",
+  "Foil No.",
+  "Exam Name",
+  "Floor No.",
+  "Room No.",
+  "Seat No.",
+  "WhatsApp No.",
+  "Email",
+];
+
 const CreateExam = () => {
   const dispatch = useDispatch();
 
@@ -486,9 +498,23 @@ const CreateExam = () => {
     //     examTime = `${Number(exam.examTime.substring(0, exam.examTime.indexOf(':')))}:${exam.examTime.substring(exam.examTime.indexOf(':') + 1)} AM`;
     // }
 
+    for (let i = 0; i < excelData.length; i++) {
+      const row = excelData[i];
+      for (let key of studentExcelKeys) {
+        if (row[key] === undefined || row[key] === null || row[key] === "") {
+          alert(`Please provide the ${key} for all students (Row ${i + 1})`);
+          return;
+        }
+      }
+    }
+
     if (excelData.some((ele) => ele["Exam Name"] !== exam.examName)) {
-      alert("Exam Name doesn't match with the exam-name provided in excel data");
-      document.getElementById("progress-container").classList.toggle("invisible");
+      alert(
+        "Exam Name doesn't match with the exam-name provided in excel data"
+      );
+      document
+        .getElementById("progress-container")
+        .classList.toggle("invisible");
       return;
     }
 
