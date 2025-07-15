@@ -519,8 +519,9 @@ const CreateExam = () => {
     }
 
     const examCreated = await scheduleExam();
-
+    console.log(`examCreated:`, examCreated);
     if (!examCreated) {
+      alert("Unable to create the exam");
       return;
     }
 
@@ -587,7 +588,7 @@ const CreateExam = () => {
           "WhatsApp No.": excelData[i]["WhatsApp No."],
         });
       }
-      console.log(res.data.payload);
+      console.log('in create student loop:', res.data.payload);
       // console.log(i + 1, ((i + 1) * 100 / excelData.length));
       setProgressStatus((((i + 1) * 100) / excelData.length).toFixed(1));
     }
@@ -601,10 +602,12 @@ const CreateExam = () => {
     });
     console.log(exam);
 
-    const worksheet = XLSX.utils.json_to_sheet(notificationNotSent);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet 1");
-    XLSX.writeFile(workbook, "notification-not-sent.xlsx");
+    if (notificationNotSent.length > 0) {
+      const worksheet = XLSX.utils.json_to_sheet(notificationNotSent);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet 1");
+      XLSX.writeFile(workbook, "notification-not-sent.xlsx");
+    }
   };
 
   // HANDLE THE CHANGES IN THE EXAM
