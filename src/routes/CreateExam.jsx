@@ -135,7 +135,7 @@ const CreateExam = () => {
   // FORMAT THE EXAM OBJECT
   const formatExam = () => {
     const floors = Array.from(
-      new Set(excelData.flat().map((ele) => ele["Floor No."]))
+      new Set(excelData.flat().map((ele) => ele["Floor No."]?.toString()))
     );
     const uniqueRoomNumbers = Array.from(
       new Set(excelData.flat().map((ele) => ele["Room No."]))
@@ -154,8 +154,8 @@ const CreateExam = () => {
         const data = excelData.filter(
           (ele) =>
             ele !== undefined &&
-            ele["Floor No."] === floorStr &&
-            ele["Room No."] === uniqueRoomNumbers[j]
+            ele["Floor No."]?.toString() === floorStr &&
+            ele["Room No."]?.toString() === uniqueRoomNumbers[j]
         );
 
         if (data.length !== 0) {
